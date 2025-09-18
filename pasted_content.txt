@@ -1,0 +1,115 @@
+Cover Letter Generator PRO — Deployment and Prompt Logic Instructions
+Objective:
+Fully deploy and host the Cover Letter Generator PRO tool on your end (similar to the Salary Decoder deployment). The tool should be fully functional, polished, and production-ready, with OpenAI-powered generation and all interactive features working as specified below.
+
+OpenAI Integration and Prompt Logic:
+Use the following prompt structure for cover letter generation:
+
+Prompt Structure (Inject Variables as Shown):
+
+You are an expert career advisor and resume coach, helping job seekers write targeted, effective cover letters that impress hiring managers.
+
+Write a personalized cover letter based on the following job description:
+[Insert Job Description Here]
+
+The selected tone for this letter is: [Formal / Friendly / Bold / Problem-Solution / Direct to Hiring Manager].
+
+If provided, please weave this achievement or key strength into the letter where it makes the most impact:
+[Insert Achievement]
+
+Here are the top keywords and skills extracted from the job description:
+[Extracted Keywords List]
+
+The cover letter should:
+
+Open with a strong, human-sounding introduction that grabs attention.
+
+Align the user’s skills and experience directly with the requirements from the job description.
+
+Use the extracted keywords naturally throughout the letter.
+
+Focus on action verbs, achievements, and quantifiable results where possible.
+
+Close with a confident, engaging conclusion that expresses enthusiasm for the role.
+
+Use clear, natural, and professional language. The letter should not sound robotic or overly formal. Keep the total length under 400 words.
+
+If no achievement is provided, focus on aligning skills and experience to the job description.
+
+Please output only the cover letter text — no extra commentary.
+
+Use GPT-4.1
+
+Temperature: 0.7
+
+Insert the prompt as the user message with the system prompt:
+“You are a helpful and experienced job search assistant.”
+
+Inputs (Required for Prompt Logic):
+jobDescription: The pasted job description from the user.
+
+tone: User-selected tone option.
+
+achievement: Optional user-provided achievement.
+
+extractedKeywords: Keywords parsed from the job description.
+
+Keyword Matching / Extraction Logic:
+Extract 5–10 key skills/keywords from the job description via frequency analysis.
+
+Feed these keywords directly into the prompt as [Extracted Keywords List].
+
+Display these as a Keyword Bubble Cloud in the UI.
+
+Visual indicators:
+
+✅ Green = Keyword included in the letter.
+
+⚠️ Yellow = Keyword missing from the letter.
+
+Refinement Button Logic:
+
+Button Name	Action
+Strengthen Opener	Re-run generation with the added system prompt: “Make the opening sentence stronger and more engaging.”
+Add Achievement Focus	Re-run with: “Emphasize the user’s achievement more prominently in the letter.”
+Shorten Letter for Readability	Re-run with: “Make the letter more concise while keeping key points intact. Limit to 300 words.”
+Do not just append these instructions to the original prompt.
+Instead, use them as refinement system prompts or modify the original prompt logic accordingly on each re-run.
+
+Interview Guys Tip Behavior:
+Do not use a static tip.
+
+Rotate from a curated list OR optionally generate dynamic tips via GPT with:
+“Provide one quick tip for writing a great cover letter for [job title] roles.”
+
+Example Tip Pool:
+
+“Use numbers and results — like ‘increased revenue by 30%.’”
+
+“Mirror the company’s values directly from the job description.”
+
+“Keep your opener short but impactful. Avoid cliches like ‘I’m writing to apply.’”
+
+User Interface Notes:
+Ensure clear labels and tooltips on the Keyword Bubble Cloud (e.g., “Top Skills Extracted from Job Description”).
+
+Refinement buttons should briefly explain their purpose when hovered or clicked.
+
+Add a short “How This Works” explanation at the top or via a help icon (?).
+
+Maintain the dark mode theme with navy, teal, white, and soft blue accent colors.
+
+Mobile-first responsive design (but clean on desktop as well).
+
+Include “Powered by The IG Network” branding in the footer or header.
+
+Hosting Request:
+Please handle full deployment and hosting of the working tool.
+
+Provide the public link for embedding on our members-only page.
+
+I will supply the OpenAI API key if needed for deployment.
+
+Please confirm receipt of these instructions and let me know if anything is unclear. I’m looking forward to getting this fully operational.
+
+Thank you.

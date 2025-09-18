@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cover Letter Generator PRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0f172a;
+            --navy-light: #1e293b;
+            --teal: #14b8a6;
+            --teal-light: #5eead4;
+            --white: #f8fafc;
+            --soft-blue: #64748b;
+            --soft-blue-light: #94a3b8;
+            --purple: #a855f7;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --green: #22c55e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--navy);
+            color: var(--white);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 1.5rem 0;
+            font-weight: 700;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+        }
+        
+        .input-section, .output-section {
+            flex: 1;
+        }
+        
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--teal-light);
+            font-size: 1rem;
+        }
+        
+        textarea, select, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--navy-light);
+            background-color: var(--navy-light);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        
+        textarea {
+            min-height: 120px;
+        }
+        
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235eead4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+        
+        button {
+            background-color: var(--teal);
+            color: var(--navy);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            padding: 15px;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: var(--teal-light);
+        }
+        
+        button:disabled {
+            background-color: var(--soft-blue);
+            cursor: not-allowed;
+        }
+        
+        .output-section {
+            background-color: var(--navy-light);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .letter-preview {
+            background-color: var(--navy);
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 300px;
+            white-space: pre-wrap;
+        }
+        
+        .letter-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .letter-preview-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .edit-button {
+            background-color: transparent;
+            color: var(--teal);
+            border: 1px solid var(--teal);
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            width: auto;
+        }
+        
+        .edit-button:hover {
+            background-color: rgba(20, 184, 166, 0.1);
+        }
+        
+        .keyword-match {
+            margin-top: 20px;
+        }
+        
+        .keyword-match h3 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .keyword-match h3 svg {
+            color: var(--teal);
+        }
+        
+        .keyword-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .keyword-tag {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .keyword-tag.included {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: var(--green);
+        }
+        
+        .keyword-tag.missing {
+            background-color: rgba(234, 179, 8, 0.2);
+            color: var(--yellow);
+        }
+        
+        .keyword-tag svg {
+            width: 12px;
+            height: 12px;
+        }
+        
+        .impact-score {
+            margin-top: 20px;
+        }
+        
+        .impact-score h3 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .score-meter {
+            position: relative;
+            height: 8px;
+            background-color: var(--navy);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .score-fill {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, var(--teal) 0%, var(--teal-light) 100%);
+            border-radius: 4px;
+            transition: width 1s ease-in-out;
+        }
+        
+        .score-value {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--teal);
+            margin-top: 10px;
+        }
+        
+        .refinement-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .refinement-button {
+            background-color: transparent;
+            border: 1px solid;
+            padding: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+        }
+        
+        .refinement-button .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--navy);
+            color: var(--white);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 10;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+        }
+        
+        .refinement-button:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .strengthen-opener {
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+        
+        .strengthen-opener:hover {
+            background-color: rgba(20, 184, 166, 0.1);
+        }
+        
+        .achievement-focused {
+            border-color: var(--purple);
+            color: var(--purple);
+        }
+        
+        .achievement-focused:hover {
+            background-color: rgba(168, 85, 247, 0.1);
+        }
+        
+        .make-more {
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+        
+        .make-more:hover {
+            background-color: rgba(20, 184, 166, 0.1);
+        }
+        
+        .shorten-letter {
+            border-color: var(--red);
+            color: var(--red);
+        }
+        
+        .shorten-letter:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        
+        .pro-tip {
+            margin-top: 20px;
+            background-color: rgba(20, 184, 166, 0.1);
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .pro-tip svg {
+            color: var(--teal);
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        
+        .pro-tip-content {
+            font-size: 0.9rem;
+        }
+        
+        .pro-tip-content strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--teal-light);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--soft-blue);
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .suggestion {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--soft-blue-light);
+            font-size: 0.9rem;
+        }
+        
+        .suggestion svg {
+            color: var(--soft-blue-light);
+        }
+        
+        .optional-label {
+            color: var(--soft-blue-light);
+            font-weight: normal;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        
+        .how-it-works {
+            background-color: rgba(20, 184, 166, 0.05);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--soft-blue-light);
+            position: relative;
+        }
+        
+        .how-it-works h3 {
+            color: var(--teal-light);
+            font-size: 1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .how-it-works p {
+            margin-bottom: 8px;
+        }
+        
+        .how-it-works ul {
+            margin-left: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .how-it-works-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--teal);
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .how-it-works-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .how-it-works.expanded .how-it-works-content {
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cover Letter Generator</h1>
+    
+    <div class="how-it-works">
+        <h3>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            How This Works
+        </h3>
+        <button class="how-it-works-toggle">
+            Show More
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+        </button>
+        <div class="how-it-works-content">
+            <p>This tool helps you create a personalized cover letter in 3 simple steps:</p>
+            <ul>
+                <li><strong>Step 1:</strong> Paste the job description you're applying for</li>
+                <li><strong>Step 2:</strong> Select your preferred tone</li>
+                <li><strong>Step 3:</strong> Optionally add a key achievement or strength</li>
+            </ul>
+            <p>The AI will analyze the job description, extract key skills, and create a tailored cover letter that matches the requirements. You can then refine your letter using the buttons below the preview.</p>
+            <p>The keyword matching feature shows which important skills from the job description are included in your letter, helping you ensure all key requirements are addressed.</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="input-section">
+            <div>
+                <label for="job-description">Job Description</label>
+                <textarea id="job-description" placeholder="Paste the job listing or key responsibilities"></textarea>
+            </div>
+            
+            <div>
+                <label for="tone">Tone</label>
+                <select id="tone">
+                    <option value="Formal">Professional & Formal</option>
+                    <option value="Friendly">Friendly</option>
+                    <option value="Bold">Assertive</option>
+                    <option value="Problem-Solution">Problem-Solution</option>
+                    <option value="Direct to Hiring Manager">Direct</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="key-strength">Key Strength or Achievement <span class="optional-label">(Optional)</span></label>
+                <textarea id="key-strength" placeholder="Describe one achievement, strength, or quality you'd like us to highlight."></textarea>
+            </div>
+            
+            <button id="generate-button">GENERATE</button>
+        </div>
+        
+        <div class="output-section">
+            <div class="letter-preview-header">
+                <h2>Letter Preview</h2>
+                <button class="edit-button hidden" id="edit-button">Edit</button>
+            </div>
+            
+            <div class="letter-preview" id="letter-preview">
+                Your cover letter will appear here after generation
+            </div>
+            
+            <div class="suggestion" id="suggestion">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <span id="suggestion-text">Consider making the opening sentence more engaging</span>
+            </div>
+            
+            <div class="keyword-match hidden" id="keyword-match">
+                <h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17
+(Content truncated due to size limit. Use line ranges to read in chunks)
