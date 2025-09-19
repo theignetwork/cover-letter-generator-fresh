@@ -309,32 +309,32 @@ export default function Home() {
       />
 
       {/* Main Application */}
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="min-h-screen bg-background max-h-screen overflow-hidden">
+        <div className="container mx-auto px-3 py-4 h-screen flex flex-col">
           <Header />
 
           {/* Error Display */}
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-700 px-4 py-3 rounded-md flex items-center space-x-2">
-              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-700 px-3 py-2 rounded-md flex items-center space-x-2 mb-3">
+              <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              <span>{error}</span>
+              <span className="text-sm">{error}</span>
               <button
                 onClick={() => setError(null)}
                 className="ml-auto text-red-500 hover:text-red-700"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </button>
             </div>
           )}
 
-          {/* Main Grid Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Main Grid Layout - Compact & Responsive */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 flex-1 min-h-0">
             {/* Left Column - Input Form */}
-            <div className="space-y-6">
+            <div className="flex flex-col space-y-3 overflow-y-auto">
               <InputForm
                 jobDescription={state.jobDescription}
                 setJobDescription={updateJobDescription}
@@ -348,7 +348,7 @@ export default function Home() {
 
               {/* Additional Actions */}
               {(state.jobDescription || state.letterContent) && (
-                <div className="flex items-center justify-between pt-4 border-t border-border">
+                <div className="flex items-center justify-between pt-1 border-t border-border">
                   <div className="text-xs text-muted-foreground">
                     {state.letterContent && (
                       <span>Last generated: {state.metadata?.generatedAt ? new Date(state.metadata.generatedAt).toLocaleTimeString() : 'Recently'}</span>
@@ -368,7 +368,7 @@ export default function Home() {
             </div>
 
             {/* Right Column - Letter Preview */}
-            <div className="space-y-6">
+            <div className="flex flex-col min-h-0">
               <LetterPreview
                 letterContent={state.letterContent}
                 setLetterContent={updateLetterContent}

@@ -255,7 +255,7 @@ export default function InputForm({
               <span className="animate-pulse">Crafting Your Cover Letter...</span>
             </span>
           ) : (
-            'Generate Professional Cover Letter'
+            'Generate Cover Letter'
           )}
         </button>
 
