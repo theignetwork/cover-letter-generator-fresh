@@ -219,31 +219,38 @@ function extractKeywords(jobDescription: string): string[] {
   return [...new Set([...foundKeywords, ...frequentWords])].slice(0, 15);
 }
 
-// Enhanced helper function to calculate comprehensive impact score
+// Enhanced helper function to calculate comprehensive impact score (60-95% range)
 function calculateEnhancedImpactScore(letterContent: string, keywords: string[], jobDescription: string): number {
-  let score = 60; // Base score
+  let score = 60; // Base score starts at 60%
 
-  // Keyword integration (0-25 points)
+  // Keyword integration (0-20 points) - More selective scoring
   const contentLower = letterContent.toLowerCase();
   const keywordsFound = keywords.filter(keyword =>
     contentLower.includes(keyword.toLowerCase())
   ).length;
-  const keywordScore = Math.min((keywordsFound / keywords.length) * 25, 25);
-  score += keywordScore;
 
-  // Length and comprehensiveness (0-20 points)
+  if (keywords.length > 0) {
+    const keywordRatio = keywordsFound / keywords.length;
+    if (keywordRatio >= 0.8) score += 20; // 80%+ of keywords
+    else if (keywordRatio >= 0.6) score += 15; // 60-79% of keywords
+    else if (keywordRatio >= 0.4) score += 10; // 40-59% of keywords
+    else if (keywordRatio >= 0.2) score += 5; // 20-39% of keywords
+    // Below 20% gets no points
+  }
+
+  // Length and comprehensiveness (0-15 points) - More realistic
   const wordCount = letterContent.split(/\s+/).length;
   let lengthScore = 0;
   if (wordCount >= 300 && wordCount <= 600) {
-    lengthScore = 20;
+    lengthScore = 15; // Optimal length
   } else if (wordCount >= 200 && wordCount < 300) {
-    lengthScore = 15;
+    lengthScore = 12; // Good length
   } else if (wordCount >= 150 && wordCount < 200) {
-    lengthScore = 10;
+    lengthScore = 8; // Acceptable but short
   } else if (wordCount > 600 && wordCount <= 800) {
-    lengthScore = 15;
+    lengthScore = 10; // A bit long but ok
   } else if (wordCount > 800) {
-    lengthScore = 10;
+    lengthScore = 5; // Too long
   }
   score += lengthScore;
 
@@ -252,15 +259,22 @@ function calculateEnhancedImpactScore(letterContent: string, keywords: string[],
   const hasClosing = /sincerely|regards|best|thank you/i.test(letterContent);
   const hasParagraphs = letterContent.split('\n\n').length >= 3;
   const hasSpecificExamples = /\$|\%|[0-9]+\s*(years?|months?|projects?|clients?|customers?|percent)/i.test(letterContent);
+  const hasActionVerbs = /led|managed|developed|created|implemented|increased|reduced|improved|achieved|delivered/i.test(letterContent);
 
   let structureScore = 0;
   if (hasOpening) structureScore += 3;
   if (hasClosing) structureScore += 3;
-  if (hasParagraphs) structureScore += 4;
-  if (hasSpecificExamples) structureScore += 5;
+  if (hasParagraphs) structureScore += 3;
+  if (hasSpecificExamples) structureScore += 4;
+  if (hasActionVerbs) structureScore += 2;
   score += structureScore;
 
-  return Math.min(Math.max(Math.round(score), 0), 100);
+  // Add some randomness to make scores more realistic (±3 points)
+  const randomFactor = Math.floor(Math.random() * 7) - 3; // -3 to +3
+  score += randomFactor;
+
+  // Ensure score stays within 60-95% range
+  return Math.min(Math.max(Math.round(score), 60), 95);
 }
 
 // Helper function to generate intelligent refinement suggestions

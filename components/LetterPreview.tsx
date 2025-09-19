@@ -378,10 +378,10 @@ export default function LetterPreview({
             </h3>
 
             <div className="flex items-center justify-center">
-              <div className="relative w-40 h-40">
+              <div className={`relative w-40 h-40 ${impactScore >= 85 ? 'drop-shadow-[0_0_15px_rgba(20,184,166,0.4)]' : ''}`}>
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                   <circle
-                    className="text-accent/20"
+                    className="text-teal-200/20"
                     strokeWidth="8"
                     stroke="currentColor"
                     fill="transparent"
@@ -390,7 +390,9 @@ export default function LetterPreview({
                     cy="50"
                   />
                   <circle
-                    className="text-secondary transition-all duration-2000 ease-out"
+                    className={`transition-all duration-2000 ease-out ${
+                      impactScore >= 85 ? 'text-teal-400' : 'text-teal-500'
+                    }`}
                     strokeWidth="8"
                     strokeDasharray={`${impactScore * 2.51} 251`}
                     strokeLinecap="round"
@@ -399,12 +401,17 @@ export default function LetterPreview({
                     r="40"
                     cx="50"
                     cy="50"
+                    style={{
+                      filter: impactScore >= 85 ? 'drop-shadow(0 0 8px rgba(20, 184, 166, 0.6))' : 'none'
+                    }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <span className="text-5xl font-bold">{impactScore}</span>
-                    <span className="text-2xl">%</span>
+                    <span className={`text-5xl font-bold ${impactScore >= 85 ? 'text-teal-400' : 'text-foreground'}`}>
+                      {impactScore}
+                    </span>
+                    <span className={`text-2xl ${impactScore >= 85 ? 'text-teal-400' : 'text-foreground'}`}>%</span>
                     <div className="text-xs text-muted-foreground mt-1">Impact Score</div>
                   </div>
                 </div>

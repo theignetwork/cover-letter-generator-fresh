@@ -95,11 +95,21 @@ body {
   }
   
   .btn-primary {
-    @apply bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-4 rounded-md transition-colors;
+    @apply bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 px-4 rounded-md transition-all duration-300 ease-in-out;
+  }
+
+  .btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 25px rgba(20, 184, 166, 0.2);
   }
   
   .btn-refinement {
-    @apply bg-background border border-accent text-accent hover:bg-accent/10 font-medium py-2 px-4 rounded-md transition-colors text-sm;
+    @apply bg-background border border-teal-500 text-teal-500 hover:bg-teal-500/10 font-medium py-2 px-4 rounded-md transition-all duration-300 ease-in-out text-sm;
+  }
+
+  .btn-refinement:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.15);
   }
   
   .keyword-tag {
