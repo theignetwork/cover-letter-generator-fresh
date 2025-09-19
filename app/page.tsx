@@ -309,8 +309,8 @@ export default function Home() {
       />
 
       {/* Main Application */}
-      <div className="min-h-screen bg-background max-h-screen overflow-hidden">
-        <div className="container mx-auto px-3 py-4 h-screen flex flex-col">
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <Header />
 
           {/* Error Display */}
@@ -331,10 +331,10 @@ export default function Home() {
             </div>
           )}
 
-          {/* Main Grid Layout - Compact & Responsive */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 flex-1 min-h-0">
+          {/* Main Grid Layout - Wide & Responsive */}
+          <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 lg:gap-8">
             {/* Left Column - Input Form */}
-            <div className="flex flex-col space-y-3 overflow-y-auto">
+            <div className="xl:col-span-2 space-y-4">
               <InputForm
                 jobDescription={state.jobDescription}
                 setJobDescription={updateJobDescription}
@@ -368,7 +368,7 @@ export default function Home() {
             </div>
 
             {/* Right Column - Letter Preview */}
-            <div className="flex flex-col min-h-0">
+            <div className="xl:col-span-3">
               <LetterPreview
                 letterContent={state.letterContent}
                 setLetterContent={updateLetterContent}
@@ -384,13 +384,13 @@ export default function Home() {
 
           {/* Generation History (Optional) */}
           {generationHistory.length > 0 && state.letterContent && (
-            <div className="mt-8 pt-8 border-t border-border">
+            <div className="mt-8 pt-6 border-t border-border">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-medium text-muted-foreground">Recent Versions</h3>
                 <span className="text-xs text-muted-foreground">{generationHistory.length} version{generationHistory.length !== 1 ? 's' : ''}</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {generationHistory.slice(-3).map((historyState, index) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {generationHistory.slice(-5).map((historyState, index) => (
                   <button
                     key={index}
                     onClick={() => setState(historyState)}

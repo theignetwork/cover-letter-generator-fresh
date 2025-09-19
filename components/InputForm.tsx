@@ -62,7 +62,7 @@ export default function InputForm({
   const keyStrengthInfo = getCharacterInfo(keyStrength, 'Key Strength');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Job Description Field */}
       <div className="space-y-2">
         <label
@@ -255,7 +255,7 @@ export default function InputForm({
               <span className="animate-pulse">Crafting Your Cover Letter...</span>
             </span>
           ) : (
-            'Generate Cover Letter'
+            'Generate Professional Cover Letter'
           )}
         </button>
 
