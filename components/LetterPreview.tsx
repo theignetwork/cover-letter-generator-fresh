@@ -469,7 +469,7 @@ export default function LetterPreview({
             </div>
           </div>
 
-        </>
+        </div>
       )}
     </div>
   );

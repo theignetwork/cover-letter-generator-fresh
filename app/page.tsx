@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { jwtVerify } from 'jose';
 import { Toaster, toast } from 'react-hot-toast';
+import { FiX, FiZap } from 'react-icons/fi';
 import Header from '@/components/Header';
 import InputForm from '@/components/InputForm';
 import LetterPreview from '@/components/LetterPreview';
@@ -25,7 +28,9 @@ interface GenerationState {
   metadata?: GenerationMetadata;
 }
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams();
+
   // Core state
   const [state, setState] = useState<GenerationState>({
     jobDescription: '',
@@ -44,6 +49,10 @@ export default function Home() {
 
   // Generation history (for potential undo functionality)
   const [generationHistory, setGenerationHistory] = useState<GenerationState[]>([]);
+
+  // Smart Context state
+  const [smartContextLoaded, setSmartContextLoaded] = useState(false);
+  const [contextData, setContextData] = useState<any>(null);
 
   // Auto-save to localStorage
   useEffect(() => {
@@ -68,6 +77,71 @@ export default function Home() {
       }));
     }
   }, [state.jobDescription, state.tone, state.keyStrength, state.letterContent]);
+
+  // Helper to build job description from context data
+  const buildJobDescription = (data: any): string => {
+    let desc = '';
+
+    if (data.companyName || data.positionTitle) {
+      desc += `Company: ${data.companyName || 'Not specified'}\n`;
+      desc += `Position: ${data.positionTitle || 'Not specified'}\n\n`;
+    }
+
+    if (data.location) desc += `Location: ${data.location}\n`;
+    if (data.remoteType) desc += `Work Type: ${data.remoteType}\n`;
+    if (data.salaryRange) desc += `Salary: ${data.salaryRange}\n`;
+    if (data.location || data.remoteType || data.salaryRange) desc += '\n';
+
+    if (data.jobDescription) {
+      desc += `Job Description:\n${data.jobDescription}`;
+    } else {
+      desc += 'Job Description:\n(Details auto-loaded from IG Career Hub)';
+    }
+
+    return desc;
+  };
+
+  // Detect and decode smart context from URL
+  useEffect(() => {
+    const loadContext = async () => {
+      console.log('[Smart Context] Checking for context parameter...');
+      const token = searchParams.get('context');
+
+      if (token) {
+        try {
+          console.log('[Smart Context] Attempting to decode JWT...');
+          const secret = process.env.NEXT_PUBLIC_JWT_SECRET || 'your-secret-key-here';
+
+          // Decode JWT token using jose (browser-compatible)
+          const secretKey = new TextEncoder().encode(secret);
+          const { payload } = await jwtVerify(token, secretKey);
+          console.log('[Smart Context] Decoded payload:', payload);
+
+          // Build job description from context
+          const jobDesc = buildJobDescription(payload);
+
+          // Auto-fill the job description
+          setState(prev => ({ ...prev, jobDescription: jobDesc }));
+          setContextData(payload);
+          setSmartContextLoaded(true);
+
+          // Clean URL
+          window.history.replaceState({}, '', window.location.pathname);
+
+          toast.success(`Job details auto-loaded from IG Career Hub!`, {
+            duration: 4000,
+            position: 'top-center',
+          });
+
+          console.log('[Smart Context] SUCCESS - Context loaded!');
+        } catch (err) {
+          console.error('[Smart Context] Failed to decode context token:', err);
+        }
+      }
+    };
+
+    loadContext();
+  }, [searchParams]);
 
   // Optimized state setters
   const updateJobDescription = useCallback((value: string) => {
@@ -313,6 +387,31 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <Header />
 
+          {/* Smart Context Banner */}
+          {smartContextLoaded && (
+            <div className="mb-6 bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border-2 border-teal-500/50 rounded-lg p-4 relative animate-fade-in">
+              <button
+                onClick={() => setSmartContextLoaded(false)}
+                className="absolute top-2 right-2 text-teal-200 hover:text-white transition-colors"
+              >
+                <FiX size={20} />
+              </button>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5">
+                  <FiZap className="text-teal-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-lg mb-1">
+                    ✨ Job Details Auto-Loaded!
+                  </h3>
+                  <p className="text-teal-100 text-sm">
+                    Context from <span className="font-semibold">{contextData?.companyName}</span> - {contextData?.positionTitle} has been automatically filled. You can edit the details below before generating your cover letter.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Error Display */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-700 px-3 py-2 rounded-md flex items-center space-x-2 mb-3">
@@ -413,5 +512,17 @@ export default function Home() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
