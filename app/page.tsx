@@ -101,11 +101,14 @@ function HomeContent() {
     return desc;
   };
 
-  // Detect and decode smart context from URL
+  // Detect and decode smart context from URL hash fragment
   useEffect(() => {
     const loadContext = async () => {
       console.log('[Smart Context] Checking for context parameter...');
-      const token = searchParams.get('context');
+      // Read from hash fragment instead of query params
+      const hash = window.location.hash.substring(1); // Remove the '#'
+      const hashParams = new URLSearchParams(hash);
+      const token = hashParams.get('context');
 
       if (token) {
         try {
@@ -141,7 +144,7 @@ function HomeContent() {
     };
 
     loadContext();
-  }, [searchParams]);
+  }, []); // Run once on mount to check hash fragment
 
   // Optimized state setters
   const updateJobDescription = useCallback((value: string) => {
