@@ -1,8 +1,29 @@
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
+import { getUserFromRequest } from '@/lib/auth';
+import { generateLimit, checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    // Authentication check
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      console.log('[generate] Unauthorized request');
+      return NextResponse.json({ error: 'Unauthorized - Please log in through WordPress' }, { status: 401 });
+    }
+    console.log(`[generate] Authenticated request from user ${user.user_id}`);
+
+    // Rate limit check (5 requests per hour)
+    const rateLimitResult = await checkRateLimit(
+      generateLimit,
+      `user_${user.user_id}`,
+      'cover letter generation',
+      5
+    );
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response;
+    }
+
     const { jobDescription, tone, keyStrength } = await request.json();
 
     // Enhanced validation

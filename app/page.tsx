@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { jwtVerify } from 'jose';
 import { Toaster, toast } from 'react-hot-toast';
 import { FiX, FiZap } from 'react-icons/fi';
 import Header from '@/components/Header';
@@ -54,6 +53,10 @@ function HomeContent() {
   const [smartContextLoaded, setSmartContextLoaded] = useState(false);
   const [contextData, setContextData] = useState<any>(null);
 
+  // Authentication state
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   // Auto-save to localStorage
   useEffect(() => {
     const savedState = localStorage.getItem('coverLetterApp_state');
@@ -101,31 +104,65 @@ function HomeContent() {
     return desc;
   };
 
-  // Detect and decode smart context from URL
+  // Detect and verify smart context from URL
   useEffect(() => {
     const loadContext = async () => {
       console.log('[Smart Context] Checking for context parameter...');
+
+      // Check sessionStorage first for existing auth
+      const storedToken = sessionStorage.getItem('auth_token');
+      const storedUserData = sessionStorage.getItem('user_data');
+
+      if (storedToken && storedUserData) {
+        try {
+          const userData = JSON.parse(storedUserData);
+          setAuthToken(storedToken);
+          setIsAuthenticated(true);
+          setContextData(userData);
+          console.log('[Smart Context] Restored authentication from sessionStorage');
+          return;
+        } catch (err) {
+          console.error('[Smart Context] Failed to restore auth:', err);
+          sessionStorage.removeItem('auth_token');
+          sessionStorage.removeItem('user_data');
+        }
+      }
+
       const token = searchParams.get('context');
 
       if (token) {
         try {
-          console.log('[Smart Context] Attempting to decode JWT...');
-          const secret = process.env.NEXT_PUBLIC_JWT_SECRET || 'your-secret-key-here';
+          console.log('[Smart Context] Token received, verifying with server...');
 
-          // Decode JWT token using jose (browser-compatible)
-          const secretKey = new TextEncoder().encode(secret);
-          const { payload } = await jwtVerify(token, secretKey);
-          console.log('[Smart Context] Decoded payload:', payload);
+          // Verify token with server (server has the secret, not client!)
+          const response = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+          });
+
+          if (!response.ok) {
+            throw new Error('Token verification failed');
+          }
+
+          const { user: userData } = await response.json();
+          console.log('[Smart Context] Token verified:', userData);
+
+          // Store token and user data
+          setAuthToken(token);
+          setIsAuthenticated(true);
+          sessionStorage.setItem('auth_token', token);
+          sessionStorage.setItem('user_data', JSON.stringify(userData));
 
           // Build job description from context
-          const jobDesc = buildJobDescription(payload);
+          const jobDesc = buildJobDescription(userData);
 
           // Auto-fill the job description
           setState(prev => ({ ...prev, jobDescription: jobDesc }));
-          setContextData(payload);
+          setContextData(userData);
           setSmartContextLoaded(true);
 
-          // Clean URL
+          // Clean URL (remove token from address bar for security)
           window.history.replaceState({}, '', window.location.pathname);
 
           toast.success(`Job details auto-loaded from IG Career Hub!`, {
@@ -133,9 +170,10 @@ function HomeContent() {
             position: 'top-center',
           });
 
-          console.log('[Smart Context] SUCCESS - Context loaded!');
+          console.log('[Smart Context] SUCCESS - Authenticated and context loaded!');
         } catch (err) {
-          console.error('[Smart Context] Failed to decode context token:', err);
+          console.error('[Smart Context] Failed to verify context token:', err);
+          toast.error('Failed to authenticate. Please try again from Career Hub.');
         }
       }
     };
@@ -185,11 +223,18 @@ function HomeContent() {
     });
 
     try {
+      // Build headers with authentication if available
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
       const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           jobDescription: state.jobDescription,
           tone: state.tone,
@@ -271,11 +316,18 @@ function HomeContent() {
       // Save current state before refinement
       setGenerationHistory(prev => [...prev.slice(-4), state]);
 
+      // Build headers with authentication if available
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
       const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           jobDescription: state.jobDescription,
           tone: state.tone,
