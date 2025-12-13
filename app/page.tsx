@@ -108,11 +108,17 @@ function HomeContent() {
   useEffect(() => {
     const loadContext = async () => {
       console.log('[Smart Context] Checking for context parameter...');
+      console.log('[Smart Context] Available window JWT variables:', {
+        __IG_COVER_LETTER_JWT__: !!(window as any).__IG_COVER_LETTER_JWT__,
+        __IG_NETWORK_JWT__: !!(window as any).__IG_NETWORK_JWT__,
+        __IG_CAREER_COACH_JWT__: !!(window as any).__IG_CAREER_COACH_JWT__,
+        __IG_CAREER_HUB_JWT__: !!(window as any).__IG_CAREER_HUB_JWT__
+      });
 
       // Check for WordPress global JWT token first
       const windowJWT = (window as any).__IG_COVER_LETTER_JWT__ || (window as any).__IG_NETWORK_JWT__;
       if (windowJWT) {
-        console.log('[Smart Context] Found WordPress JWT token');
+        console.log('[Smart Context] Found WordPress JWT token (length:', windowJWT.length, ')');
         try {
           // Verify token with server
           const response = await fetch('/api/auth/verify', {
@@ -121,8 +127,11 @@ function HomeContent() {
             body: JSON.stringify({ token: windowJWT })
           });
 
+          console.log('[Smart Context] Token verification response status:', response.status);
+
           if (response.ok) {
             const { user: userData } = await response.json();
+            console.log('[Smart Context] User data received:', userData);
             setAuthToken(windowJWT);
             setIsAuthenticated(true);
             setContextData(userData);
@@ -130,10 +139,15 @@ function HomeContent() {
             sessionStorage.setItem('user_data', JSON.stringify(userData));
             console.log('[Smart Context] WordPress authentication successful');
             return;
+          } else {
+            const errorData = await response.json();
+            console.error('[Smart Context] Token verification failed:', response.status, errorData);
           }
         } catch (err) {
           console.error('[Smart Context] WordPress JWT verification failed:', err);
         }
+      } else {
+        console.log('[Smart Context] No WordPress JWT token found in window variables');
       }
 
       // Check sessionStorage for existing auth

@@ -5,10 +5,19 @@ import { generateLimit, checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    // Log all headers for debugging
+    const headers = Object.fromEntries(request.headers.entries());
+    console.log('[generate] Request headers:', {
+      authorization: headers.authorization ? 'Bearer ***' : 'missing',
+      'x-auth-token': headers['x-auth-token'] ? '***' : 'missing',
+      origin: headers.origin,
+      referer: headers.referer
+    });
+
     // Authentication check
     const user = await getUserFromRequest(request);
     if (!user) {
-      console.log('[generate] Unauthorized request');
+      console.log('[generate] Unauthorized request - no valid user from token');
       return NextResponse.json({ error: 'Unauthorized - Please log in through WordPress' }, { status: 401 });
     }
     console.log(`[generate] Authenticated request from user ${user.user_id}`);
