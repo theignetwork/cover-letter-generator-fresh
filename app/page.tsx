@@ -109,7 +109,34 @@ function HomeContent() {
     const loadContext = async () => {
       console.log('[Smart Context] Checking for context parameter...');
 
-      // Check sessionStorage first for existing auth
+      // Check for WordPress global JWT token first
+      const windowJWT = (window as any).__IG_COVER_LETTER_JWT__ || (window as any).__IG_NETWORK_JWT__;
+      if (windowJWT) {
+        console.log('[Smart Context] Found WordPress JWT token');
+        try {
+          // Verify token with server
+          const response = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: windowJWT })
+          });
+
+          if (response.ok) {
+            const { user: userData } = await response.json();
+            setAuthToken(windowJWT);
+            setIsAuthenticated(true);
+            setContextData(userData);
+            sessionStorage.setItem('auth_token', windowJWT);
+            sessionStorage.setItem('user_data', JSON.stringify(userData));
+            console.log('[Smart Context] WordPress authentication successful');
+            return;
+          }
+        } catch (err) {
+          console.error('[Smart Context] WordPress JWT verification failed:', err);
+        }
+      }
+
+      // Check sessionStorage for existing auth
       const storedToken = sessionStorage.getItem('auth_token');
       const storedUserData = sessionStorage.getItem('user_data');
 
