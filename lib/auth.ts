@@ -52,7 +52,8 @@ export async function getUserFromRequest(request: Request): Promise<UserPayload 
 
     console.log(`[Auth] Token verified for user ${payload.user_id}`);
 
-    return payload as UserPayload;
+    // TypeScript requires casting through unknown because JWTPayload is a generic type
+    return payload as unknown as UserPayload;
 
   } catch (error) {
     console.error('[Auth] Token verification failed:', error);
