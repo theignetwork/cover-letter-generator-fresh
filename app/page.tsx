@@ -137,6 +137,15 @@ function HomeContent() {
             setContextData(userData);
             sessionStorage.setItem('auth_token', windowJWT);
             sessionStorage.setItem('user_data', JSON.stringify(userData));
+
+            // Build and auto-fill job description from context if available
+            if (userData.companyName || userData.positionTitle || userData.jobDescription) {
+              const jobDesc = buildJobDescription(userData);
+              setState(prev => ({ ...prev, jobDescription: jobDesc }));
+              setSmartContextLoaded(true);
+              console.log('[Smart Context] Job description auto-populated from context');
+            }
+
             console.log('[Smart Context] WordPress authentication successful');
             return;
           } else {
