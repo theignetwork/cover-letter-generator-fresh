@@ -1,5 +1,5 @@
 /**
- * Authentication helper for server-side API routes
+ * Server-side authentication utilities
  * Verifies JWT tokens and extracts user information
  */
 
@@ -16,16 +16,27 @@ interface UserPayload {
 
 /**
  * Extract and verify user from request
- * Checks Authorization header for Bearer token
+ * Checks both Authorization header and x-auth-token header
  */
 export async function getUserFromRequest(request: Request): Promise<UserPayload | null> {
   try {
-    // Get token from Authorization header
-    const authHeader = request.headers.get('Authorization');
-    const token = authHeader?.replace('Bearer ', '');
+    // Check for token in headers
+    const authHeader = request.headers.get('authorization');
+    const xAuthToken = request.headers.get('x-auth-token');
+
+    let token: string | null = null;
+
+    // Try Authorization header (Bearer token format)
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+    // Try x-auth-token header
+    else if (xAuthToken) {
+      token = xAuthToken;
+    }
 
     if (!token) {
-      console.log('[Auth] No token in Authorization header');
+      console.log('[Auth] No token found in request headers');
       return null;
     }
 
@@ -39,13 +50,23 @@ export async function getUserFromRequest(request: Request): Promise<UserPayload 
     const secretKey = new TextEncoder().encode(secret);
     const { payload } = await jwtVerify(token, secretKey);
 
-    console.log(`[Auth] Verified user ${payload.user_id}`);
+    console.log(`[Auth] Token verified for user ${payload.user_id}`);
 
-    // TypeScript requires casting through unknown because JWTPayload is a generic type
-    return payload as unknown as UserPayload;
+    return payload as UserPayload;
 
   } catch (error) {
     console.error('[Auth] Token verification failed:', error);
     return null;
   }
+}
+
+/**
+ * Extract user ID from request (convenience function)
+ *
+ * @param request - The incoming request
+ * @returns User ID if valid, null if invalid or missing
+ */
+export async function getUserIdFromRequest(request: Request): Promise<number | null> {
+  const user = await getUserFromRequest(request);
+  return user ? user.user_id : null;
 }
