@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 3000,
-      system: "You are an elite professional cover letter writer with extensive experience in HR and recruitment. You create compelling, personalized cover letters that stand out to hiring managers and significantly increase interview rates. Your writing is sophisticated yet authentic, strategic yet human. IMPORTANT: Output the cover letter as plain text only. Do NOT use any markdown formatting — no headers (#), no bold (**), no italics (*), no bullet points, no special formatting of any kind. Write it exactly as it would appear printed on paper.",
+      system: "You are an elite professional cover letter writer with extensive experience in HR and recruitment. You create compelling, personalized cover letters that stand out to hiring managers and significantly increase interview rates. Your writing is sophisticated yet authentic, strategic yet human. IMPORTANT RULES: Output plain text only, no markdown formatting whatsoever. Never use em dashes or en dashes. Keep letters concise (250-400 words).",
       messages: [
         {
           role: "user",
@@ -162,13 +162,13 @@ export async function POST(request: Request) {
 
 // Enhanced helper function to create sophisticated prompts
 function createEnhancedPrompt(jobDescription: string, tone: string, keyStrength: string, keywords: string[]): string {
-  let prompt = `Create a highly compelling and personalized cover letter for the following job description. This letter should be comprehensive, sophisticated, and significantly longer than typical cover letters to showcase deep understanding and enthusiasm.\n\n`;
+  let prompt = `Create a compelling and personalized cover letter for the following job description. The letter should be concise and focused, like a real person would write.\n\n`;
 
   prompt += `JOB DESCRIPTION:\n${jobDescription}\n\n`;
 
   prompt += `WRITING INSTRUCTIONS:\n`;
   prompt += `• Tone: ${tone}\n`;
-  prompt += `• Length: Write a comprehensive letter (800-1200 words) that thoroughly addresses the role\n`;
+  prompt += `• Length: 250-400 words. Be concise and impactful — do not pad or ramble.\n`;
   prompt += `• Structure: Strong opening hook, detailed body paragraphs with specific examples, compelling closing\n`;
   prompt += `• Style: Professional yet engaging, confident but not arrogant, authentic and human\n\n`;
 
@@ -189,6 +189,7 @@ function createEnhancedPrompt(jobDescription: string, tone: string, keyStrength:
   prompt += `• Use active voice and varied sentence structure\n`;
   prompt += `• Avoid generic phrases and clichés\n`;
   prompt += `• Make it sound authentic and personally written, not AI-generated\n`;
+  prompt += `• NEVER use em dashes (—) or en dashes (–). Use commas, periods, semicolons, or colons instead.\n`;
   prompt += `• End with a professional but warm closing\n`;
   prompt += `• Output PLAIN TEXT ONLY — no markdown, no headers (#), no bold (**), no bullet points, no formatting. Just the letter text as it would appear on paper.\n`;
   prompt += `• Do NOT add any commentary, analysis, or "key elements" section after the letter — output ONLY the letter itself.\n\n`;
