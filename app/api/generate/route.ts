@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 3000,
-      system: "You are an elite professional cover letter writer with extensive experience in HR and recruitment. You create compelling, personalized cover letters that stand out to hiring managers and significantly increase interview rates. Your writing is sophisticated yet authentic, strategic yet human.",
+      system: "You are an elite professional cover letter writer with extensive experience in HR and recruitment. You create compelling, personalized cover letters that stand out to hiring managers and significantly increase interview rates. Your writing is sophisticated yet authentic, strategic yet human. IMPORTANT: Output the cover letter as plain text only. Do NOT use any markdown formatting — no headers (#), no bold (**), no italics (*), no bullet points, no special formatting of any kind. Write it exactly as it would appear printed on paper.",
       messages: [
         {
           role: "user",
@@ -189,7 +189,9 @@ function createEnhancedPrompt(jobDescription: string, tone: string, keyStrength:
   prompt += `• Use active voice and varied sentence structure\n`;
   prompt += `• Avoid generic phrases and clichés\n`;
   prompt += `• Make it sound authentic and personally written, not AI-generated\n`;
-  prompt += `• End with a professional but warm closing\n\n`;
+  prompt += `• End with a professional but warm closing\n`;
+  prompt += `• Output PLAIN TEXT ONLY — no markdown, no headers (#), no bold (**), no bullet points, no formatting. Just the letter text as it would appear on paper.\n`;
+  prompt += `• Do NOT add any commentary, analysis, or "key elements" section after the letter — output ONLY the letter itself.\n\n`;
 
   prompt += `Write the complete cover letter now:`;
 
