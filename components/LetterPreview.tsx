@@ -56,10 +56,21 @@ export default function LetterPreview({
     }
   }, [letterContent, keywords]);
 
-  // Copy to clipboard functionality
+  // Copy to clipboard functionality (with fallback for iframes)
   const handleCopyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(letterContent);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(letterContent);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = letterContent;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
       setCopySuccess(true);
       toast.success('Cover letter copied to clipboard!', {
         duration: 2000,
