@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/auth';
 import { generateLimit, checkRateLimit } from '@/lib/rateLimit';
@@ -54,19 +54,19 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
-        { error: 'OpenAI API key is not configured' },
+        { error: 'Anthropic API key is not configured' },
         { status: 500 }
       );
     }
 
-    // Initialize OpenAI client with the API key from environment variables
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+    // Initialize Anthropic client with the API key from environment variables
+    const client = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
     });
 
-    console.log('Generating cover letter with OpenAI API...');
+    console.log('Generating cover letter with Anthropic API...');
     console.log('Job Description length:', jobDescription.length);
     console.log('Tone:', tone);
     console.log('Key Strength provided:', !!keyStrength);
@@ -74,30 +74,23 @@ export async function POST(request: Request) {
     // Extract keywords from job description
     const keywords = extractKeywords(jobDescription);
 
-    // Create enhanced prompt for OpenAI
+    // Create enhanced prompt
     const prompt = createEnhancedPrompt(jobDescription, tone, keyStrength, keywords);
 
-    // Call OpenAI API to generate cover letter with increased token limit
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+    // Call Anthropic API to generate cover letter
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 3000,
+      system: "You are an elite professional cover letter writer with extensive experience in HR and recruitment. You create compelling, personalized cover letters that stand out to hiring managers and significantly increase interview rates. Your writing is sophisticated yet authentic, strategic yet human.",
       messages: [
-        {
-          role: "system",
-          content: "You are an elite professional cover letter writer with extensive experience in HR and recruitment. You create compelling, personalized cover letters that stand out to hiring managers and significantly increase interview rates. Your writing is sophisticated yet authentic, strategic yet human."
-        },
         {
           role: "user",
           content: prompt
         }
       ],
-      temperature: 0.7,
-      max_tokens: 3000, // Increased for much longer responses
-      top_p: 0.9,
-      frequency_penalty: 0.1,
-      presence_penalty: 0.1,
     });
 
-    const letterContent = completion.choices[0].message.content || '';
+    const letterContent = response.content[0].type === 'text' ? response.content[0].text : '';
     console.log('Letter generated successfully. Length:', letterContent.length);
 
     if (!letterContent.trim()) {
@@ -135,21 +128,21 @@ export async function POST(request: Request) {
     });
 
     // Enhanced error handling with specific error types
-    if (error.code === 'insufficient_quota') {
+    if (error.status === 429) {
       return NextResponse.json(
-        { error: 'OpenAI API quota exceeded. Please try again later.' },
+        { error: 'API rate limit exceeded. Please try again later.' },
         { status: 429 }
       );
     }
 
-    if (error.code === 'invalid_api_key') {
+    if (error.status === 401) {
       return NextResponse.json(
-        { error: 'Invalid OpenAI API key configuration.' },
+        { error: 'Invalid Anthropic API key configuration.' },
         { status: 401 }
       );
     }
 
-    if (error.code === 'model_not_found') {
+    if (error.status === 404) {
       return NextResponse.json(
         { error: 'Requested AI model is not available.' },
         { status: 503 }
@@ -167,7 +160,7 @@ export async function POST(request: Request) {
   }
 }
 
-// Enhanced helper function to create sophisticated prompts for OpenAI
+// Enhanced helper function to create sophisticated prompts
 function createEnhancedPrompt(jobDescription: string, tone: string, keyStrength: string, keywords: string[]): string {
   let prompt = `Create a highly compelling and personalized cover letter for the following job description. This letter should be comprehensive, sophisticated, and significantly longer than typical cover letters to showcase deep understanding and enthusiasm.\n\n`;
 
