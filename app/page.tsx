@@ -57,6 +57,28 @@ function HomeContent() {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Helper: check if a JWT is expired (client-side, no secret needed)
+  const isTokenExpired = useCallback((token: string): boolean => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Add 30s buffer so we don't use a token that's about to expire
+      return payload.exp ? payload.exp * 1000 < Date.now() - 30000 : false;
+    } catch {
+      return true;
+    }
+  }, []);
+
+  // Helper: clear auth and show expiry message
+  const handleSessionExpired = useCallback(() => {
+    setAuthToken(null);
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('user_data');
+    toast.error('Your session has expired. Please log in again from Career Hub.', {
+      duration: 8000,
+    });
+  }, []);
+
   // Auto-save to localStorage
   useEffect(() => {
     const savedState = localStorage.getItem('coverLetterApp_state');
@@ -164,13 +186,22 @@ function HomeContent() {
       const storedUserData = sessionStorage.getItem('user_data');
 
       if (storedToken && storedUserData) {
+        // Check if stored token is expired before restoring
         try {
-          const userData = JSON.parse(storedUserData);
-          setAuthToken(storedToken);
-          setIsAuthenticated(true);
-          setContextData(userData);
-          console.log('[Smart Context] Restored authentication from sessionStorage');
-          return;
+          const payload = JSON.parse(atob(storedToken.split('.')[1]));
+          if (payload.exp && payload.exp * 1000 < Date.now()) {
+            console.log('[Smart Context] Stored token is expired, clearing session');
+            sessionStorage.removeItem('auth_token');
+            sessionStorage.removeItem('user_data');
+            toast.error('Your session has expired. Please log in again from Career Hub.', { duration: 8000 });
+          } else {
+            const userData = JSON.parse(storedUserData);
+            setAuthToken(storedToken);
+            setIsAuthenticated(true);
+            setContextData(userData);
+            console.log('[Smart Context] Restored authentication from sessionStorage');
+            return;
+          }
         } catch (err) {
           console.error('[Smart Context] Failed to restore auth:', err);
           sessionStorage.removeItem('auth_token');
@@ -261,6 +292,12 @@ function HomeContent() {
       return;
     }
 
+    // Check token expiry before making the request
+    if (authToken && isTokenExpired(authToken)) {
+      handleSessionExpired();
+      return;
+    }
+
     // Save current state to history
     setGenerationHistory(prev => [...prev.slice(-4), state]); // Keep last 5 states
 
@@ -295,6 +332,11 @@ function HomeContent() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.error === 'token_expired') {
+          toast.dismiss(loadingToast);
+          handleSessionExpired();
+          return;
+        }
         throw new Error(data.error || `Server error: ${response.status}`);
       }
 
@@ -357,6 +399,12 @@ function HomeContent() {
       return;
     }
 
+    // Check token expiry before making the request
+    if (authToken && isTokenExpired(authToken)) {
+      handleSessionExpired();
+      return;
+    }
+
     setIsRefining(true);
     const loadingToast = toast.loading('Refining your cover letter...', {
       duration: 15000,
@@ -390,6 +438,11 @@ function HomeContent() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.error === 'token_expired') {
+          toast.dismiss(loadingToast);
+          handleSessionExpired();
+          return;
+        }
         throw new Error(data.error || 'Failed to refine cover letter');
       }
 

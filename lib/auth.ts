@@ -55,8 +55,11 @@ export async function getUserFromRequest(request: Request): Promise<UserPayload 
     // TypeScript requires casting through unknown because JWTPayload is a generic type
     return payload as unknown as UserPayload;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Auth] Token verification failed:', error);
+    if (error?.code === 'ERR_JWT_EXPIRED') {
+      return { expired: true } as any;
+    }
     return null;
   }
 }

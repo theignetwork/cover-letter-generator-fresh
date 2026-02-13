@@ -20,6 +20,10 @@ export async function POST(request: Request) {
       console.log('[generate] Unauthorized request - no valid user from token');
       return NextResponse.json({ error: 'Unauthorized - Please log in through WordPress' }, { status: 401 });
     }
+    if ((user as any).expired) {
+      console.log('[generate] Expired token received');
+      return NextResponse.json({ error: 'token_expired', message: 'Your session has expired. Please log in again from Career Hub.' }, { status: 401 });
+    }
     console.log(`[generate] Authenticated request from user ${user.user_id}`);
 
     // Rate limit check (5 requests per hour)
@@ -75,7 +79,7 @@ export async function POST(request: Request) {
 
     // Call OpenAI API to generate cover letter with increased token limit
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
@@ -121,7 +125,14 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    console.error('Error generating cover letter:', error);
+    // Log full error details for debugging
+    console.error('Error generating cover letter:', {
+      message: error.message,
+      code: error.code,
+      type: error.type,
+      status: error.status,
+      error: error
+    });
 
     // Enhanced error handling with specific error types
     if (error.code === 'insufficient_quota') {

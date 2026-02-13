@@ -34,11 +34,13 @@ export async function POST(request: Request) {
       valid: true
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Auth Verify] Token verification failed:', error);
+    const isExpired = error?.code === 'ERR_JWT_EXPIRED';
     return NextResponse.json({
-      error: 'Invalid or expired token',
-      valid: false
+      error: isExpired ? 'token_expired' : 'Invalid or expired token',
+      valid: false,
+      expired: isExpired
     }, { status: 401 });
   }
 }
